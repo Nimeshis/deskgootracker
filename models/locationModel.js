@@ -40,7 +40,7 @@ const LocationSchema = new Schema({
     required: true,
   },
   accuracy: {
-    type: Number,
+    type: String,
     required: true,
   },
 });
