@@ -20,9 +20,9 @@ const LoginModelSchema = new Schema({
     required: true,
     unique: true,
   },
-  geofence: {
-    type: Schema.Types.Mixed,
-    required: true,
-  },
+  // geofence: {
+  //   type: Schema.Types.Mixed,
+  //   required: true,
+  // },
 });
 module.exports = mongoose.model("LoginModel", LoginModelSchema);

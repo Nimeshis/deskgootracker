@@ -102,6 +102,7 @@ router.get("/device", async (req, res) => {
       return res.status(200).json({
         message: "Latest data for the device fetched successfully",
         mobile_id: device.mobile_id,
+        mobileIdentifier: device.mobileIdentifier,
         employee_name: device.employeeName, // Use employeeName
         latestLocation,
       });
@@ -111,6 +112,7 @@ router.get("/device", async (req, res) => {
       const latestData = devices.map((device) => ({
         mobile_id: device.mobile_id,
         employee_name: device.employeeName, // Use employeeName
+        mobileIdentifier: device.mobileIdentifier,
         latestLocation: device.locations.sort(
           (a, b) => new Date(b.deviceTime) - new Date(a.deviceTime)
         )[0],

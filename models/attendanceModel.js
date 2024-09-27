@@ -2,16 +2,12 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const AttendanceModelSchema = new Schema({
-  bool: {
+  cin_coutbool: {
     type: Boolean,
     required: true,
   },
-  action: {
+  cin_coutaction: {
     type: Boolean,
-    required: true,
-  },
-  attendanceType: {
-    type: String,
     required: true,
   },
   cInTime: {
@@ -22,11 +18,11 @@ const AttendanceModelSchema = new Schema({
     type: DateTime,
     required: true,
   },
-  empIdentifier: {
+  mobileIdentifier: {
     type: String,
-    ref: "Employee",
+    // required: true,
   },
-  deviceTime: {
+  mobileTime: {
     type: DateTime,
     required: true,
   },
