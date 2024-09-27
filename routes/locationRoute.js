@@ -173,4 +173,14 @@ router.get("/location/:mobile_id", async (req, res) => {
   }
 });
 
+router.delete("/device", async (req, res) => {
+  try {
+    await DeviceLocation.deleteMany({});
+    res.json({ message: "all location deleted" });
+  } catch (err) {
+    console.error("Error deleting all locations:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

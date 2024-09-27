@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const location = require("./routes/locationRoute");
 const login = require("./routes/loginRoute");
+const Counter = require("./routes/counterRoute");
 
 const app = express();
 
@@ -21,6 +22,7 @@ mongoose
 // Routes
 app.use("/api", location);
 app.use("/api", login);
+app.use("/api", Counter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
