@@ -23,7 +23,7 @@ function formatDateTime(date) {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
-// Route to add a device's location
+//route to post device location
 router.post("/device", async (req, res) => {
   try {
     const {
@@ -36,26 +36,20 @@ router.post("/device", async (req, res) => {
       deviceTime,
     } = req.body;
 
-    // Create a new location object
     const newLocation = {
       latitude,
       longitude,
       battery_percentage,
       accuracy,
-      deviceTime: formatDateTime(new Date(deviceTime)), // Format device time
-      serverTime: formatDateTime(new Date()), // Format Current server time
+      deviceTime: formatDateTime(new Date(deviceTime)),
+      serverTime: formatDateTime(new Date()),
     };
 
-    // Get the next mobile_id from the counter
-    const mobile_id = await getNextSequenceValue("mobile_id");
-
-    // Check if the device already exists
     let device = await DeviceLocation.findOne({
       mobileIdentifier: mobileIdentifier,
     });
 
     if (device) {
-      // Append new location if device exists
       device.locations.push(newLocation);
       await device.save();
       return res.status(200).json({
@@ -63,10 +57,11 @@ router.post("/device", async (req, res) => {
         device,
       });
     } else {
-      // Create a new device if it doesn't exist
+      const mobile_id = await getNextSequenceValue("mobile_id");
+
       const newDevice = new DeviceLocation({
-        mobileIdentifier: mobileIdentifier, // Make sure this matches the field you want to use
-        mobile_id, // Add generated mobile_id
+        mobile_id,
+        mobileIdentifier: mobileIdentifier,
         employeeName,
         locations: [newLocation],
       });
