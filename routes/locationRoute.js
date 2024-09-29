@@ -3,39 +3,18 @@ const router = express.Router();
 const DeviceLocation = require("../models/locationModel");
 const Counter = require("../models/counterModel");
 
-// Function to get the next sequence value
-async function getNextSequenceValue(sequenceName) {
+// Function to get the next sequence value for each device's location_id
+async function getNextSequenceValueForDevice(deviceIdentifier) {
   const sequenceDocument = await Counter.findOneAndUpdate(
-    { _id: sequenceName },
+    { _id: `location_id_${deviceIdentifier}` }, // Unique counter per device
     { $inc: { sequence_value: 1 } },
-    { new: true, upsert: true } // Create if it doesn't exist
+    { new: true, upsert: true } // Create if not exist
   );
 
   return sequenceDocument.sequence_value;
 }
 
-// Function to reset todays_id to 1
-async function resetTodaysId() {
-  await Counter.findOneAndUpdate(
-    { _id: "todays_id" },
-    { sequence_value: 1 },
-    { new: true, upsert: true }
-  );
-}
-
-// Function to format the date
-function formatDateTime(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
-// Route to post device location
+// Route to handle location updates
 router.post("/location", async (req, res) => {
   try {
     const {
@@ -51,49 +30,25 @@ router.post("/location", async (req, res) => {
       distance,
     } = req.body;
 
-    // Get a new location_id
-    const location_id = await getNextSequenceValue("location_id");
+    // Generate unique location_id for this specific device
+    const location_id = await getNextSequenceValueForDevice(mobileIdentifier);
 
-    // // Get today's date in YYYY-MM-DD format
-    // const today = new Date().toISOString().slice(0, 10);
-
-    // // Fetch the last reset date for todays_id
-    // const lastResetDoc = await Counter.findOne({ _id: "todays_id_reset" });
-    // let todays_id;
-
-    // if (lastResetDoc && lastResetDoc.lastReset === today) {
-    //   // If the last reset is today, increment the todays_id
-    //   todays_id = await getNextSequenceValue("todays_id");
-    // } else {
-    //   // If the last reset was not today, reset the todays_id to 1 and update lastReset
-    //   await resetTodaysId(); // Reset todays_id to 1
-    //   todays_id = 1; // Start from 1 for the new day
-    //   await Counter.findOneAndUpdate(
-    //     { _id: "todays_id_reset" },
-    //     { lastReset: today },
-    //     { upsert: true }
-    //   );
-    // }
-
-    // Create a new location object
+    // Create new location object
     const newLocation = {
       location_id,
-      // todays_id,
       latitude,
       longitude,
       batteryPercentage,
       accuracy,
       deviceTime,
-      serverTime: formatDateTime(new Date()),
+      serverTime: new Date().toISOString(),
       connectivityType,
       connectivityStatus,
       distance,
     };
 
     // Check if the device already exists
-    let device = await DeviceLocation.findOne({
-      mobileIdentifier: mobileIdentifier,
-    });
+    let device = await DeviceLocation.findOne({ mobileIdentifier });
 
     if (device) {
       // Append new location if the device exists
@@ -104,12 +59,12 @@ router.post("/location", async (req, res) => {
         device,
       });
     } else {
-      // Create a new device if it doesn't exist
-      const mobile_id = await getNextSequenceValue("mobile_id");
+      // Create a new device if not exists
+      const mobile_id = await getNextSequenceValueForDevice("mobile_id");
 
       const newDevice = new DeviceLocation({
         mobile_id,
-        mobileIdentifier: mobileIdentifier,
+        mobileIdentifier,
         employeeName,
         locations: [newLocation],
       });
@@ -125,6 +80,8 @@ router.post("/location", async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 });
+
+module.exports = router;
 
 // Route to fetch device locations
 router.get("/location", async (req, res) => {
