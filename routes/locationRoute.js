@@ -1,7 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const DeviceLocation = require("../models/locationModel");
+const Counter = require("../models/counterModel");
 
+async function getNextSequenceValue(sequenceName) {
+  const sequenceDocument = await Counter.findOneAndUpdate(
+    { _id: sequenceName },
+    { $inc: { sequence_value: 1 } },
+    { new: true, upsert: true } // Create if it doesn't exist
+  );
+
+  return sequenceDocument.sequence_value;
+}
 // Route to handle location updates
 router.post("/location", async (req, res) => {
   try {
@@ -44,7 +54,10 @@ router.post("/location", async (req, res) => {
       });
     } else {
       // Create a new device if not exists
+      const mobile_id = await getNextSequenceValue("mobile_id");
+
       const newDevice = new DeviceLocation({
+        mobile_id,
         mobileIdentifier,
         employeeName,
         locations: [newLocation],
