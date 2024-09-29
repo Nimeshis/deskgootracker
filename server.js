@@ -12,7 +12,7 @@ app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 
 mongoose
-  .connect("mongodb://localhost:27017/location", {
+  .connect("mongodb://localhost:27017/deviceLocation", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
