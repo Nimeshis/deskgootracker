@@ -4,15 +4,15 @@ const DeviceLocation = require("../models/locationModel");
 const Counter = require("../models/counterModel");
 
 // Function to get the next sequence value for each device's location_id
-async function getNextSequenceValueForDevice(deviceIdentifier) {
-  const sequenceDocument = await Counter.findOneAndUpdate(
-    { _id: `location_id_${deviceIdentifier}` }, // Unique counter per device
-    { $inc: { sequence_value: 1 } },
-    { new: true, upsert: true } // Create if not exist
-  );
+// async function getNextSequenceValueForDevice(deviceIdentifier) {
+//   const sequenceDocument = await Counter.findOneAndUpdate(
+//     { _id: `location_id_${deviceIdentifier}` }, // Unique counter per device
+//     { $inc: { sequence_value: 1 } },
+//     { new: true, upsert: true } // Create if not exist
+//   );
 
-  return sequenceDocument.sequence_value;
-}
+//   return sequenceDocument.sequence_value;
+// }
 
 // Route to handle location updates
 router.post("/location", async (req, res) => {
@@ -31,11 +31,11 @@ router.post("/location", async (req, res) => {
     } = req.body;
 
     // Generate unique location_id for this specific device
-    const location_id = await getNextSequenceValueForDevice(mobileIdentifier);
+    // const location_id = await getNextSequenceValueForDevice(mobileIdentifier);
 
     // Create new location object
     const newLocation = {
-      location_id,
+      // location_id,
       latitude,
       longitude,
       batteryPercentage,
