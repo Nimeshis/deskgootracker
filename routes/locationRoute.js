@@ -148,6 +148,7 @@ router.get("/location", async (req, res) => {
         mobileIdentifier: device.mobileIdentifier,
         employee_name: device.employeeName, // Use employeeName
         latestLocation,
+        totalDistance: device.totalDistance,
       });
     } else {
       // Find all devices and return the latest location for each
@@ -159,6 +160,7 @@ router.get("/location", async (req, res) => {
         latestLocation: device.locations.sort(
           (a, b) => new Date(b.deviceTime) - new Date(a.deviceTime)
         )[0],
+        totalDistance: device.totalDistance,
       }));
 
       return res.status(200).json({
@@ -209,6 +211,7 @@ router.get("/location/:mobile_id", async (req, res) => {
       mobile_id: device.mobile_id,
       employee_name: device.employeeName, // Use employeeName
       locations,
+      totalDistance: device.totalDistance,
     });
   } catch (error) {
     console.error("Error fetching locations:", error);
