@@ -1,24 +1,20 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-function formatDateTime(date) {
-  const pad = (num) => (num < 10 ? "0" + num : num);
-  return (
-    date.getFullYear() +
-    "-" +
-    pad(date.getMonth() + 1) +
-    "-" +
-    pad(date.getDate()) +
-    " " +
-    pad(date.getHours()) +
-    ":" +
-    pad(date.getMinutes()) +
-    ":" +
-    pad(date.getSeconds())
-  );
+// Function to calculate total distance
+function calculateTotalDistance(locations) {
+  return locations.reduce((total, loc) => total + loc.distance, 0);
 }
 
 const LocationSchema = new Schema({
+  location_id: {
+    type: Number,
+    unique: true,
+  },
+  // todays_id: {
+  //   type: Number,
+  //   // unique: true,
+  // },
   latitude: {
     type: Number,
     required: true,
@@ -29,13 +25,25 @@ const LocationSchema = new Schema({
   },
   deviceTime: {
     type: Date,
-    // default: Date.now,
+    required: true,
   },
   serverTime: {
     type: Date,
     default: Date.now,
   },
-  battery_percentage: {
+  connectivityType: {
+    type: String,
+    required: true,
+  },
+  connectivityStatus: {
+    type: String,
+    required: true,
+  },
+  batteryPercentage: {
+    type: Number,
+    required: true,
+  },
+  distance: {
     type: Number,
     required: true,
   },
@@ -60,11 +68,22 @@ const DeviceSchema = new Schema(
       required: true,
     },
     locations: [LocationSchema],
+    totalDistance: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+DeviceSchema.pre("save", function (next) {
+  const device = this;
+  device.totalDistance = calculateTotalDistance(device.locations);
+
+  next();
+});
 
 const Device = mongoose.model("DeviceLocation", DeviceSchema);
 

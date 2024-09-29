@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const DeviceLocation = require("../models/locationModel"); // Ensure this path is correct
-const Counter = require("../models/counterModel"); // Import your counter model
+const DeviceLocation = require("../models/locationModel");
+const Counter = require("../models/counterModel");
 
 // Function to get the next sequence value
 async function getNextSequenceValue(sequenceName) {
@@ -13,6 +13,17 @@ async function getNextSequenceValue(sequenceName) {
 
   return sequenceDocument.sequence_value;
 }
+
+// Function to reset todays_id to 1
+async function resetTodaysId() {
+  await Counter.findOneAndUpdate(
+    { _id: "todays_id" },
+    { sequence_value: 1 },
+    { new: true, upsert: true }
+  );
+}
+
+// Function to format the date
 function formatDateTime(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -23,33 +34,69 @@ function formatDateTime(date) {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
-//route to post device location
-router.post("/device", async (req, res) => {
+
+// Route to post device location
+router.post("/location", async (req, res) => {
   try {
     const {
       mobileIdentifier,
       employeeName,
       latitude,
       longitude,
-      battery_percentage,
+      batteryPercentage,
       accuracy,
       deviceTime,
+      connectivityType,
+      connectivityStatus,
+      distance,
     } = req.body;
 
+    // Get a new location_id
+    const location_id = await getNextSequenceValue("location_id");
+
+    // // Get today's date in YYYY-MM-DD format
+    // const today = new Date().toISOString().slice(0, 10);
+
+    // // Fetch the last reset date for todays_id
+    // const lastResetDoc = await Counter.findOne({ _id: "todays_id_reset" });
+    // let todays_id;
+
+    // if (lastResetDoc && lastResetDoc.lastReset === today) {
+    //   // If the last reset is today, increment the todays_id
+    //   todays_id = await getNextSequenceValue("todays_id");
+    // } else {
+    //   // If the last reset was not today, reset the todays_id to 1 and update lastReset
+    //   await resetTodaysId(); // Reset todays_id to 1
+    //   todays_id = 1; // Start from 1 for the new day
+    //   await Counter.findOneAndUpdate(
+    //     { _id: "todays_id_reset" },
+    //     { lastReset: today },
+    //     { upsert: true }
+    //   );
+    // }
+
+    // Create a new location object
     const newLocation = {
+      location_id,
+      // todays_id,
       latitude,
       longitude,
-      battery_percentage,
+      batteryPercentage,
       accuracy,
-      deviceTime: formatDateTime(new Date(deviceTime)),
+      deviceTime,
       serverTime: formatDateTime(new Date()),
+      connectivityType,
+      connectivityStatus,
+      distance,
     };
 
+    // Check if the device already exists
     let device = await DeviceLocation.findOne({
       mobileIdentifier: mobileIdentifier,
     });
 
     if (device) {
+      // Append new location if the device exists
       device.locations.push(newLocation);
       await device.save();
       return res.status(200).json({
@@ -57,6 +104,7 @@ router.post("/device", async (req, res) => {
         device,
       });
     } else {
+      // Create a new device if it doesn't exist
       const mobile_id = await getNextSequenceValue("mobile_id");
 
       const newDevice = new DeviceLocation({
@@ -79,7 +127,7 @@ router.post("/device", async (req, res) => {
 });
 
 // Route to fetch device locations
-router.get("/device", async (req, res) => {
+router.get("/location", async (req, res) => {
   try {
     const { mobile_id } = req.query;
 
@@ -168,7 +216,7 @@ router.get("/location/:mobile_id", async (req, res) => {
   }
 });
 
-router.delete("/device", async (req, res) => {
+router.delete("/location", async (req, res) => {
   try {
     await DeviceLocation.deleteMany({});
     res.json({ message: "all location deleted" });
