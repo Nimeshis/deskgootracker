@@ -1,18 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const DeviceLocation = require("../models/locationModel");
-const Counter = require("../models/counterModel");
-
-// Function to get the next sequence value for each device's location_id
-// async function getNextSequenceValueForDevice(deviceIdentifier) {
-//   const sequenceDocument = await Counter.findOneAndUpdate(
-//     { _id: `location_id_${deviceIdentifier}` }, // Unique counter per device
-//     { $inc: { sequence_value: 1 } },
-//     { new: true, upsert: true } // Create if not exist
-//   );
-
-//   return sequenceDocument.sequence_value;
-// }
 
 // Route to handle location updates
 router.post("/location", async (req, res) => {
@@ -30,12 +18,8 @@ router.post("/location", async (req, res) => {
       distance,
     } = req.body;
 
-    // Generate unique location_id for this specific device
-    // const location_id = await getNextSequenceValueForDevice(mobileIdentifier);
-
-    // Create new location object
+    // Create new location object without location_id
     const newLocation = {
-      // location_id,
       latitude,
       longitude,
       batteryPercentage,
@@ -60,10 +44,7 @@ router.post("/location", async (req, res) => {
       });
     } else {
       // Create a new device if not exists
-      const mobile_id = await getNextSequenceValueForDevice("mobile_id");
-
       const newDevice = new DeviceLocation({
-        mobile_id,
         mobileIdentifier,
         employeeName,
         locations: [newLocation],
@@ -80,8 +61,6 @@ router.post("/location", async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 });
-
-module.exports = router;
 
 // Route to fetch device locations
 router.get("/location", async (req, res) => {
@@ -103,7 +82,7 @@ router.get("/location", async (req, res) => {
         message: "Latest data for the device fetched successfully",
         mobile_id: device.mobile_id,
         mobileIdentifier: device.mobileIdentifier,
-        employee_name: device.employeeName, // Use employeeName
+        employee_name: device.employeeName,
         latestLocation,
         totalDistance: device.totalDistance,
       });
@@ -112,7 +91,7 @@ router.get("/location", async (req, res) => {
       const devices = await DeviceLocation.find({});
       const latestData = devices.map((device) => ({
         mobile_id: device.mobile_id,
-        employee_name: device.employeeName, // Use employeeName
+        employee_name: device.employeeName,
         mobileIdentifier: device.mobileIdentifier,
         latestLocation: device.locations.sort(
           (a, b) => new Date(b.deviceTime) - new Date(a.deviceTime)
@@ -166,7 +145,7 @@ router.get("/location/:mobile_id", async (req, res) => {
     return res.status(200).json({
       message: "Locations fetched successfully",
       mobile_id: device.mobile_id,
-      employee_name: device.employeeName, // Use employeeName
+      employee_name: device.employeeName,
       locations,
       totalDistance: device.totalDistance,
     });
@@ -179,7 +158,7 @@ router.get("/location/:mobile_id", async (req, res) => {
 router.delete("/location", async (req, res) => {
   try {
     await DeviceLocation.deleteMany({});
-    res.json({ message: "all location deleted" });
+    res.json({ message: "All location data deleted" });
   } catch (err) {
     console.error("Error deleting all locations:", err);
     res.status(500).json({ message: "Server error" });

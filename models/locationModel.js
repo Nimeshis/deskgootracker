@@ -7,10 +7,6 @@ function calculateTotalDistance(locations) {
 }
 
 const LocationSchema = new Schema({
-  location_id: {
-    type: Number,
-    unique: true,
-  },
   // todays_id: {
   //   type: Number,
   //   // unique: true,
