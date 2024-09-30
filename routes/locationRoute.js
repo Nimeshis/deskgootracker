@@ -35,7 +35,7 @@ router.post("/location", async (req, res) => {
       batteryPercentage,
       accuracy,
       deviceTime,
-      serverTime: new Date().toISOString(),
+      serverTime: new Date().toISOString().replace("T", " ").substring(0, 19),
       connectivityType,
       connectivityStatus,
       distance,
