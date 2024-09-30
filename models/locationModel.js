@@ -20,12 +20,12 @@ const LocationSchema = new Schema({
     required: true,
   },
   deviceTime: {
-    type: String,
+    type: Date,
     required: true,
   },
   serverTime: {
-    type: String,
-    // default: Date.now,
+    type: Date,
+    default: Date.now,
   },
   connectivityType: {
     type: String,
