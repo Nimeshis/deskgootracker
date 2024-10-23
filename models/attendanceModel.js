@@ -4,35 +4,33 @@ const Schema = mongoose.Schema;
 const AttendanceModelSchema = new Schema({
   cin_coutbool: {
     type: Boolean,
+    default: false,
     required: true,
   },
-  cin_coutaction: {
-    type: Boolean,
-    required: true,
-  },
-  cInTime: {
-    type: DateTime,
-    required: true,
-  },
-  cOutTime: {
-    type: DateTime,
-    required: true,
-  },
-  mobileIdentifier: {
-    type: String,
-    // required: true,
-  },
+
+  // mobileIdentifier: {
+  //   type: String,
+  //   // required: true,
+  // },
   mobileTime: {
-    type: DateTime,
+    type: string,
     required: true,
   },
   serverTime: {
-    type: DateTime,
+    type: string,
+    default: Date.now(),
+  },
+  lat: {
+    type: Number,
     required: true,
   },
-  geofence: {
-    type: Schema.Types.Mixed,
+  lng: {
+    type: Number,
     required: true,
   },
+  // geofence: {
+  //   type: Schema.Types.Mixed,
+  //   required: true,
+  // },
 });
 module.exports = mongoose.model("AttendanceModel", AttendanceModelSchema);

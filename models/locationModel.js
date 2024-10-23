@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const attendanceModel = require("./attendanceModel");
 const Schema = mongoose.Schema;
 
 // Function to calculate total distance
@@ -7,10 +8,10 @@ function calculateTotalDistance(locations) {
 }
 
 const LocationSchema = new Schema({
-  // todays_id: {
-  //   type: Number,
-  //   // unique: true,
-  // },
+  location_id: {
+    type: Number,
+    // unique: true,
+  },
   latitude: {
     type: Number,
     required: true,
@@ -63,7 +64,8 @@ const DeviceSchema = new Schema(
       type: String,
       required: true,
     },
-    locations: [LocationSchema],
+    locations: { LocationSchema },
+    Attendance: { attendanceModel },
     totalDistance: {
       type: Number,
       default: 0,

@@ -5,6 +5,7 @@ const cors = require("cors");
 const location = require("./routes/locationRoute");
 const login = require("./routes/loginRoute");
 const Counter = require("./routes/counterRoute");
+const user = require("./routes/userRoute");
 
 const app = express();
 
@@ -23,6 +24,7 @@ mongoose
 app.use("/api", location);
 app.use("/api", login);
 app.use("/api", Counter);
+app.use("/api", user);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -3,6 +3,16 @@ const router = express.Router();
 const DeviceLocation = require("../models/locationModel");
 const Counter = require("../models/counterModel");
 
+// Function to get the next sequence value for each device's location_id
+async function getNextSequenceValueForDevice(mobileIdentifier) {
+  const sequenceDocument = await Counter.findOneAndUpdate(
+    { _id: `location_id_${mobileIdentifier}` }, // Unique counter per device
+    { $inc: { sequence_value: 1 } },
+    { new: true, upsert: true } // Create if not exist
+  );
+
+  return sequenceDocument.sequence_value;
+}
 async function getNextSequenceValue(sequenceName) {
   const sequenceDocument = await Counter.findOneAndUpdate(
     { _id: sequenceName },
@@ -12,6 +22,7 @@ async function getNextSequenceValue(sequenceName) {
 
   return sequenceDocument.sequence_value;
 }
+
 // Route to handle location updates
 router.post("/location", async (req, res) => {
   try {
@@ -28,14 +39,18 @@ router.post("/location", async (req, res) => {
       distance,
     } = req.body;
 
-    // Create new location object without location_id
+    // Generate unique location_id for this specific device
+    const location_id = await getNextSequenceValueForDevice(mobileIdentifier);
+
+    // Create new location object
     const newLocation = {
+      location_id,
       latitude,
       longitude,
       batteryPercentage,
       accuracy,
       deviceTime,
-      serverTime: new Date().toISOString().replace("T", " ").substring(0, 19),
+      serverTime: new Date().toISOString(),
       connectivityType,
       connectivityStatus,
       distance,
@@ -45,12 +60,19 @@ router.post("/location", async (req, res) => {
     let device = await DeviceLocation.findOne({ mobileIdentifier });
 
     if (device) {
+      const latestLocation = device.locations.sort(
+        (a, b) => new Date(b.deviceTime) - new Date(a.deviceTime)
+      )[0];
       // Append new location if the device exists
       device.locations.push(newLocation);
       await device.save();
       return res.status(200).json({
         message: "Location data appended successfully.",
-        device,
+        mobile_id: device.mobile_id,
+        mobileIdentifier: device.mobileIdentifier,
+        employee_name: device.employeeName, // Use employeeName
+        latestLocation,
+        totalDistance: device.totalDistance,
       });
     } else {
       // Create a new device if not exists
@@ -95,7 +117,7 @@ router.get("/location", async (req, res) => {
         message: "Latest data for the device fetched successfully",
         mobile_id: device.mobile_id,
         mobileIdentifier: device.mobileIdentifier,
-        employee_name: device.employeeName,
+        employee_name: device.employeeName, // Use employeeName
         latestLocation,
         totalDistance: device.totalDistance,
       });
@@ -104,7 +126,7 @@ router.get("/location", async (req, res) => {
       const devices = await DeviceLocation.find({});
       const latestData = devices.map((device) => ({
         mobile_id: device.mobile_id,
-        employee_name: device.employeeName,
+        employee_name: device.employeeName, // Use employeeName
         mobileIdentifier: device.mobileIdentifier,
         latestLocation: device.locations.sort(
           (a, b) => new Date(b.deviceTime) - new Date(a.deviceTime)
@@ -158,7 +180,7 @@ router.get("/location/:mobile_id", async (req, res) => {
     return res.status(200).json({
       message: "Locations fetched successfully",
       mobile_id: device.mobile_id,
-      employee_name: device.employeeName,
+      employee_name: device.employeeName, // Use employeeName
       locations,
       totalDistance: device.totalDistance,
     });
@@ -171,7 +193,7 @@ router.get("/location/:mobile_id", async (req, res) => {
 router.delete("/location", async (req, res) => {
   try {
     await DeviceLocation.deleteMany({});
-    res.json({ message: "All location data deleted" });
+    res.json({ message: "all location deleted" });
   } catch (err) {
     console.error("Error deleting all locations:", err);
     res.status(500).json({ message: "Server error" });
