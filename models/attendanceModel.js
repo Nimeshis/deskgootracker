@@ -17,7 +17,7 @@ const AttendanceModelSchema = new Schema({
     required: true,
   },
   serverTime: {
-    type: string,
+    type: String,
     default: Date.now(),
   },
   lat: {
