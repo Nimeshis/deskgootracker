@@ -13,7 +13,7 @@ const AttendanceModelSchema = new Schema({
   //   // required: true,
   // },
   mobileTime: {
-    type: string,
+    type: String,
     required: true,
   },
   serverTime: {
