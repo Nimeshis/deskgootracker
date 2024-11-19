@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const router = mongoose.Router;
 
 const employeeSchema = new Schema({
   employee_name: {

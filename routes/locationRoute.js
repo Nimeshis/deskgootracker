@@ -114,12 +114,14 @@ router.get("/location", async (req, res) => {
       )[0];
 
       return res.status(200).json({
-        message: "Latest data for the device fetched successfully",
-        mobile_id: device.mobile_id,
-        mobileIdentifier: device.mobileIdentifier,
-        employee_name: device.employeeName, // Use employeeName
-        latestLocation,
-        totalDistance: device.totalDistance,
+        data: {
+          message: "Latest data for the device fetched successfully",
+          mobile_id: device.mobile_id,
+          mobileIdentifier: device.mobileIdentifier,
+          employee_name: device.employeeName, // Use employeeName
+          latestLocation,
+          totalDistance: device.totalDistance,
+        },
       });
     } else {
       // Find all devices and return the latest location for each
@@ -178,11 +180,13 @@ router.get("/location/:mobile_id", async (req, res) => {
     }
 
     return res.status(200).json({
-      message: "Locations fetched successfully",
-      mobile_id: device.mobile_id,
-      employee_name: device.employeeName, // Use employeeName
-      locations,
-      totalDistance: device.totalDistance,
+      data: {
+        message: "Locations fetched successfully",
+        mobile_id: device.mobile_id,
+        employee_name: device.employeeName, // Use employeeName
+        locations,
+        totalDistance: device.totalDistance,
+      },
     });
   } catch (error) {
     console.error("Error fetching locations:", error);

@@ -1,18 +1,24 @@
 const express = require("express");
-const router = express.Router;
+const router = express.router();
 const employeeModel = require("../models/employeeModel");
 
-// GET all employees
 router.get("/", async (req, res) => {
   try {
-    const employees = await employeeModel.find({});
+    const employees = await employeeModel.find();
     res.json(employees);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    res.status(500).send("Server error");
   }
 });
 
-// GET a single employee by ID
-router.get("/:id", getEmployee, (req, res) => {
-  res.json(res.employee);
+router.get("/:id", async (req, res) => {
+  try {
+    const employee = await employeeModel.findById(req.params.id);
+    if (!employee) return res.status(404).send("Employee not found");
+    res.json(employee);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
+  }
 });
