@@ -9,6 +9,7 @@ const user = require("./routes/userRoute");
 const attendance = require("./routes/attendanceRoute");
 const visitLog = require("./routes/VisitLogRoute");
 const countries = require("./routes/countryRoute");
+const specialization = require("./routes/specializationRoute");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api", user);
 app.use("/api", attendance);
 app.use("/api", visitLog);
 app.use("/api", countries);
+app.use("/api", specialization);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

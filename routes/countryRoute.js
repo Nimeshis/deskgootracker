@@ -66,7 +66,7 @@ router.get("/country/:countryName", async (req, res) => {
   }
 });
 
-router.post("/countries", async (req, res) => {
+router.post("/country", async (req, res) => {
   const { countryData } = req.body;
 
   try {
