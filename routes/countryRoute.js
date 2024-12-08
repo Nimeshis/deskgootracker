@@ -55,10 +55,7 @@ router.get("/country/:countryName", async (req, res) => {
       }))
       .sort((a, b) => a.regionName.localeCompare(b.regionName));
 
-    res.json({
-      country: countryEntry.country,
-      regions: sortedRegions,
-    });
+    res.json((regions = sortedRegions));
   } catch (err) {
     res.status(500).json({
       message: `Error retrieving data for ${countryName}: ${err.message}`,
