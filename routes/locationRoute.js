@@ -60,18 +60,19 @@ router.post("/location", async (req, res) => {
     let device = await DeviceLocation.findOne({ mobileIdentifier });
 
     if (device) {
-      const latestLocation = device.locations.sort(
-        (a, b) => new Date(b.deviceTime) - new Date(a.deviceTime)
-      )[0];
-      // Append new location if the device exists
+      // Ensure locations is an array
+      if (!Array.isArray(device.locations)) {
+        device.locations = [];
+      }
+      // Append new location
       device.locations.push(newLocation);
       await device.save();
       return res.status(200).json({
         message: "Location data appended successfully.",
         mobile_id: device.mobile_id,
         mobileIdentifier: device.mobileIdentifier,
-        employee_name: device.employeeName, // Use employeeName
-        latestLocation,
+        employee_name: device.employeeName,
+        latestLocation: newLocation,
         totalDistance: device.totalDistance,
       });
     } else {
@@ -82,7 +83,7 @@ router.post("/location", async (req, res) => {
         mobile_id,
         mobileIdentifier,
         employeeName,
-        locations: [newLocation],
+        locations: [newLocation], // Initialize with first location
       });
 
       await newDevice.save();
@@ -103,7 +104,7 @@ router.get("/location", async (req, res) => {
     const { mobile_id } = req.query;
 
     if (mobile_id) {
-      const device = await DeviceLocation.findOne({ mobile_id });
+      const device = await DeviceLocation.findOne(mobile_id);
       if (!device) {
         return res.status(404).json({ message: "DeviceLocation not found" });
       }
@@ -126,13 +127,12 @@ router.get("/location", async (req, res) => {
     } else {
       // Find all devices and return the latest location for each
       const devices = await DeviceLocation.find({});
+      console.log("LOCATION FOUND");
       const latestData = devices.map((device) => ({
         mobile_id: device.mobile_id,
         employee_name: device.employeeName, // Use employeeName
         mobileIdentifier: device.mobileIdentifier,
-        latestLocation: device.locations.sort(
-          (a, b) => new Date(b.deviceTime) - new Date(a.deviceTime)
-        )[0],
+        latestLocation: device.locations,
         totalDistance: device.totalDistance,
       }));
 

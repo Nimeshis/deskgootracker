@@ -6,6 +6,9 @@ const location = require("./routes/locationRoute");
 const login = require("./routes/loginRoute");
 const Counter = require("./routes/counterRoute");
 const user = require("./routes/userRoute");
+const attendance = require("./routes/attendanceRoute");
+const visitLog = require("./routes/VisitLogRoute");
+const countries = require("./routes/countryRoute");
 
 const app = express();
 
@@ -25,6 +28,9 @@ app.use("/api", location);
 app.use("/api", login);
 app.use("/api", Counter);
 app.use("/api", user);
+app.use("/api", attendance);
+app.use("/api", visitLog);
+app.use("/api", countries);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
