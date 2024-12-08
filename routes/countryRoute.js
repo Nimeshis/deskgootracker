@@ -4,7 +4,7 @@ const CountryData = require("../models/countryModel");
 
 //get all list of countries
 // Get all country data
-router.get("/countries", async (req, res) => {
+router.get("/country", async (req, res) => {
   try {
     const data = await CountryData.find();
 
@@ -12,21 +12,57 @@ router.get("/countries", async (req, res) => {
       return res.status(404).json({ message: "No country data found" });
     }
 
-    const sortedData = data.map((countryEntry) => {
-      return {
-        country: countryEntry.countryData[0]?.country,
-        regions: countryEntry.countryData[0]?.regions
-          .map((region) => ({
-            regionName: region.regionName,
-            cities: region.cities.sort(),
-          }))
-          .sort((a, b) => a.regionName.localeCompare(b.regionName)),
-      };
-    });
+    // Extract the list of countries
+    const countryList = data
+      .map((entry) => entry.countryData[0]?.country)
+      .filter(Boolean);
 
-    res.json(sortedData);
+    res.json(countryList);
   } catch (err) {
     res.status(500).json({ message: `Error retrieving data: ${err.message}` });
+  }
+});
+
+// Route 2: Fetch regions and cities for a specific country
+router.get("/country/:countryName", async (req, res) => {
+  const { countryName } = req.params;
+
+  try {
+    const data = await CountryData.findOne({
+      "countryData.country": countryName,
+    });
+
+    if (!data) {
+      return res
+        .status(404)
+        .json({ message: `No data found for country: ${countryName}` });
+    }
+
+    const countryEntry = data.countryData.find(
+      (entry) => entry.country === countryName
+    );
+
+    if (!countryEntry) {
+      return res
+        .status(404)
+        .json({ message: `No data found for country: ${countryName}` });
+    }
+
+    const sortedRegions = countryEntry.regions
+      .map((region) => ({
+        regionName: region.regionName,
+        cities: region.cities.sort(),
+      }))
+      .sort((a, b) => a.regionName.localeCompare(b.regionName));
+
+    res.json({
+      country: countryEntry.country,
+      regions: sortedRegions,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: `Error retrieving data for ${countryName}: ${err.message}`,
+    });
   }
 });
 
