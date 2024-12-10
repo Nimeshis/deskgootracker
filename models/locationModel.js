@@ -20,7 +20,7 @@ const LocationSchema = new Schema({
     required: true,
   },
   deviceTime: {
-    type: Date,
+    type: String,
     required: true,
   },
   serverTime: {
@@ -63,7 +63,7 @@ const DeviceSchema = new Schema(
       type: String,
       required: true,
     },
-    locations: { LocationSchema },
+    locations: [LocationSchema],
     totalDistance: {
       type: Number,
       default: 0,

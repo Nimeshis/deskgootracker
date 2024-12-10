@@ -104,45 +104,69 @@ router.get("/location", async (req, res) => {
     const { mobile_id } = req.query;
 
     if (mobile_id) {
-      const device = await DeviceLocation.findOne(mobile_id);
+      // Find a specific device by mobile_id
+      const device = await DeviceLocation.findOne({
+        mobile_id: Number(mobile_id),
+      });
+
       if (!device) {
         return res.status(404).json({ message: "DeviceLocation not found" });
       }
 
-      // Get the latest location
-      const latestLocation = device.locations.sort(
-        (a, b) => new Date(b.deviceTime) - new Date(a.deviceTime)
-      )[0];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Today's date at 00:00:00
+
+      // Filter only today's distances from the `locations`
+      const todayDistances = device.locations?.filter(
+        (location) => new Date(location.deviceTime) >= today
+      );
+
+      const totalDistanceToday =
+        todayDistances?.reduce((sum, loc) => sum + loc.distance, 0) || 0;
 
       return res.status(200).json({
+        message: "Device data fetched successfully",
         data: {
-          message: "Latest data for the device fetched successfully",
           mobile_id: device.mobile_id,
+          employee_name: device.employeeName,
           mobileIdentifier: device.mobileIdentifier,
-          employee_name: device.employeeName, // Use employeeName
-          latestLocation,
+          latestLocation: device.locations.slice(-1)[0],
+          totalDistanceToday,
           totalDistance: device.totalDistance,
         },
       });
-    } else {
-      // Find all devices and return the latest location for each
-      const devices = await DeviceLocation.find({});
-      console.log("LOCATION FOUND");
-      const latestData = devices.map((device) => ({
-        mobile_id: device.mobile_id,
-        employee_name: device.employeeName, // Use employeeName
-        mobileIdentifier: device.mobileIdentifier,
-        latestLocation: device.locations,
-        totalDistance: device.totalDistance,
-      }));
-
-      return res.status(200).json({
-        message: "Latest data for all devices fetched successfully",
-        latestData,
-      });
     }
+
+    // If no mobile_id provided, fetch all devices
+    const devices = await DeviceLocation.find({});
+
+    const data = devices.map((device) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const todayDistances = device.locations?.filter(
+        (location) => new Date(location.deviceTime) >= today
+      );
+
+      const totalDistanceToday =
+        todayDistances?.reduce((sum, loc) => sum + loc.distance, 0) || 0;
+
+      return {
+        mobile_id: device.mobile_id,
+        employee_name: device.employeeName,
+        mobileIdentifier: device.mobileIdentifier,
+        latestLocation: device.locations.slice(-1)[0],
+        totalDistanceToday,
+        totalDistance: device.totalDistance,
+      };
+    });
+
+    return res.status(200).json({
+      message: "All devices data fetched successfully",
+      data,
+    });
   } catch (error) {
-    console.error("Error fetching devices:", error);
+    console.error("Error fetching device data:", error);
     return res.status(500).json({ message: "Server error" });
   }
 });
