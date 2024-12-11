@@ -126,7 +126,7 @@ router.get("/location", async (req, res) => {
 
       return res.status(200).json({
         message: "Device data fetched successfully",
-        data: {
+        latestData: {
           mobile_id: device.mobile_id,
           employee_name: device.employeeName,
           mobileIdentifier: device.mobileIdentifier,
@@ -140,7 +140,7 @@ router.get("/location", async (req, res) => {
     // If no mobile_id provided, fetch all devices
     const devices = await DeviceLocation.find({});
 
-    const data = devices.map((device) => {
+    const latestData = devices.map((device) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -163,7 +163,7 @@ router.get("/location", async (req, res) => {
 
     return res.status(200).json({
       message: "All devices data fetched successfully",
-      data,
+      latestData,
     });
   } catch (error) {
     console.error("Error fetching device data:", error);
