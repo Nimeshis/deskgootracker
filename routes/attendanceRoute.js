@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const AttendanceModel = require("../models/attendanceModel");
 
-router.post("/", async (req, res) => {
+router.post("/attendance", async (req, res) => {
   try {
     const { status, biometricId, mobileTime, lat, long } = req.body;
 
