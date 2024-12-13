@@ -26,9 +26,9 @@ mongoose
 
 // Routes
 app.use("/api", location);
-app.use("/api", login);
+// app.use("/api", login);
 app.use("/api", Counter);
-app.use("/api", user);
+// app.use("/api", user);
 app.use("/api", attendance);
 app.use("/api", visitLog);
 app.use("/api", countries);
