@@ -5,7 +5,7 @@ const {
   postAttendanceByID,
   getAttendanceByIdAndDate,
 } = require("../controllers/attendanceController");
-router.route("/:id").get(getAttendanceById).post(postAttendanceByID);
-router.route("/date/:id").get(getAttendanceByIdAndDate);
+router.route("/attendance/:id").get(getAttendanceById).post(postAttendanceByID);
+router.route("/attendance/date/:id").get(getAttendanceByIdAndDate);
 
 module.exports = router;
