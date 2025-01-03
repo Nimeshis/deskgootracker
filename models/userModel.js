@@ -5,8 +5,8 @@ const bcrypt = require("bcrypt");
 const UserModelSchema = new Schema(
   {
     fullName: { type: String, required: true },
-    email: { type: String, unique: true, sparse: true }, // `sparse` allows null values while maintaining uniqueness
-    number: { type: Number, unique: true, sparse: true },
+    email: { type: String, unique: true, required: true },
+    number: { type: String, unique: true, default: "" },
     password: { type: String, required: true },
     mobileIdentifier: { type: String, default: "" },
     role: {

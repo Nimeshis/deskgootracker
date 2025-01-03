@@ -57,7 +57,7 @@ const DeviceSchema = new Schema(
     mobileIdentifier: {
       type: String,
       // required: true,
-      unique: true,
+      // unique: true,
     },
     fullName: {
       type: String,
