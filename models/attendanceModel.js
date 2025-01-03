@@ -1,33 +1,30 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const AttendanceModelSchema = new Schema({
-  status: {
-    type: String,
-    required: true,
+const attendanceModel = new mongoose.Schema(
+  {
+    status: { type: String, default: "" },
+    checkIn: {
+      status: { type: String, default: "" },
+      deviceInTime: { type: String, default: "" },
+      latitude: { type: Number, default: 0 },
+      longitude: { type: Number, default: 0 },
+    },
+    checkOut: {
+      status: { type: String, default: "" },
+      deviceOutTime: { type: String, default: "" },
+      latitude: { type: Number, default: 0 },
+      longitude: { type: Number, default: 0 },
+    },
+    totalHours: { type: Number, default: 0 },
   },
-  mobileTime: {
-    type: String,
-    required: true,
-  },
-  serverTime: {
-    type: Date, // Changed from String to Date
-    default: Date.now, // Changed to function
-  },
-  lat: {
-    type: Number,
-    required: true,
-  },
-  long: {
-    type: Number,
-    required: true,
-  },
-  mobileIdentifier: {
-    type: String,
-  },
-  biometricId: {
-    type: String,
-  },
+  { timestamps: true }
+);
+
+const attendanceSchema = mongoose.Schema({
+  _id: { type: String, required: true },
+  attendance: [attendanceModel],
 });
 
-module.exports = mongoose.model("AttendanceModel", AttendanceModelSchema);
+const Attendance = mongoose.model("Attendance", attendanceSchema);
+
+module.exports = Attendance;

@@ -1,5 +1,7 @@
 const express = require("express");
+require("dotenv").config();
 const mongoose = require("mongoose");
+const connectDB = require("./config/db");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const location = require("./routes/locationRoute");
@@ -10,29 +12,28 @@ const attendance = require("./routes/attendanceRoute");
 const visitLog = require("./routes/VisitLogRoute");
 const countries = require("./routes/countryRoute");
 const specialization = require("./routes/specializationRoute");
+const poc = require("./routes/pocRoute");
+const authenticate = require("./middleware/authenticationToken");
 
+// Connect to MongoDB
+connectDB();
 const app = express();
 
 app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 
-mongoose
-  .connect("mongodb://localhost:27017/deviceLocation", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
-
-// Routes
-app.use("/api", location);
-// app.use("/api", login);
-app.use("/api", Counter);
-// app.use("/api", user);
-app.use("/api", attendance);
-app.use("/api", visitLog);
+// Routes that do NOT require authentication
+app.use("/api", login);
 app.use("/api", countries);
+app.use("/api", user);
 app.use("/api", specialization);
+
+// Routes that DO require authentication
+app.use("/api", authenticate, location);
+app.use("/api", authenticate, Counter);
+app.use("/api", authenticate, attendance);
+app.use("/api", authenticate, visitLog);
+app.use("/api", authenticate, poc);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -42,4 +43,7 @@ app.use((err, req, res, next) => {
 
 // Server listening
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+mongoose.connection.once("open", () => {
+  console.log("Connected to MongoDB");
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+});

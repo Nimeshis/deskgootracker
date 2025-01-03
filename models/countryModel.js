@@ -5,9 +5,9 @@ const countryDataSchema = new Schema({
   countryData: [
     {
       country: { type: String, required: true },
-      regions: [
+      area: [
         {
-          regionName: { type: String, required: true },
+          areaName: { type: String, required: true },
           cities: [{ type: String }], // Array of city names
         },
       ],

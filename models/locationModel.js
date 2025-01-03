@@ -56,10 +56,10 @@ const DeviceSchema = new Schema(
     },
     mobileIdentifier: {
       type: String,
-      required: true,
+      // required: true,
       unique: true,
     },
-    employeeName: {
+    fullName: {
       type: String,
       required: true,
     },
@@ -81,6 +81,6 @@ DeviceSchema.pre("save", function (next) {
   next();
 });
 
-const Device = mongoose.model("DeviceLocation", DeviceSchema);
+const Device = mongoose.model("Location", DeviceSchema);
 
 module.exports = Device;

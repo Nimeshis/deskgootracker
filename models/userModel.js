@@ -1,62 +1,39 @@
-// const mongoose = require("mongoose");
-// const bcrypt = require("bcrypt");
-// const Schema = mongoose.Schema;
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const bcrypt = require("bcrypt");
 
-// const UserModelSchema = new Schema({
-//   user_id: {
-//     type: Number,
-//     required: true,
-//     unique: true,
-//   },
-//   username: {
-//     type: String,
-//     required: true,
-//   },
-//   email: {
-//     type: String,
-//     unique: true,
-//   },
-//   number: {
-//     type: Number,
-//     unique: true,
-//   },
-//   password: {
-//     type: String,
-//     required: true,
-//   },
-//   mobileIdentifier: {
-//     type: String,
-//     // required: true,
-//     // unique: true,
-//   },
-//   role: {
-//     type: String,
-//     required: true,
-//   },
-//   // resetMobile: {
-//   //   type: Boolean,
-//   //   default: true,
-//   // },
-//   // mobileOs: {
-//   //   type: String,
-//   //   required: true,
-//   // },
-// });
+const UserModelSchema = new Schema(
+  {
+    fullName: { type: String, required: true },
+    email: { type: String, unique: true, sparse: true }, // `sparse` allows null values while maintaining uniqueness
+    number: { type: Number, unique: true, sparse: true },
+    password: { type: String, required: true },
+    mobileIdentifier: { type: String, default: "" },
+    role: {
+      type: String,
+      default: "",
+    },
+    firstLogin: { type: Boolean, default: true },
+    resetMobile: { type: Boolean, default: true },
+    refreshToken: {
+      type: String,
+      required: false,
+      default: "",
+    },
+  },
+  { timestamps: true }
+);
 
-// // Hash the password before saving the user
-// UserModelSchema.pre("save", async function (next) {
-//   try {
-//     // Only hash the password if it's new or modified
-//     if (!this.isModified("password")) return next();
+// Hash password before saving
+UserModelSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
 
-//     // Hash the password with bcrypt
-//     const salt = await bcrypt.genSalt(10);
-//     this.password = await bcrypt.hash(this.password, salt);
+// Method to compare passwords
+UserModelSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
-//     next();
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
-// module.exports = mongoose.model("UserModel", UserModelSchema);
+module.exports = mongoose.model("User", UserModelSchema);
