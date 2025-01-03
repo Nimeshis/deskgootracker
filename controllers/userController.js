@@ -54,7 +54,8 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists." });
     }
 
-    // Hash the password
+    //create random number
+    const randomNumber = Math.floor(Math.random() * 900000) + 100000;
 
     // Create new user
     const newUser = new User({
@@ -63,6 +64,7 @@ const registerUser = async (req, res) => {
       number,
       password,
       role,
+      mobileIdentifier: randomNumber,
     });
 
     await newUser.save();
@@ -75,6 +77,7 @@ const registerUser = async (req, res) => {
     const createLocationId = await Location.create({
       _id: newUser._id,
       fullName: newUser.fullName,
+      mobileIdentifier: newUser.mobileIdentifier,
     });
     createLocationId.save();
 
