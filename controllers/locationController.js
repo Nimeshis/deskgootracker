@@ -1,5 +1,5 @@
 const express = require("express");
-const DeviceLocation = require("../models/locationModel");
+const Location = require("../models/locationModel");
 const Counter = require("../models/counterModel");
 
 // Function to get the next sequence value for each device's location_id
@@ -56,7 +56,7 @@ const postLocation = async (req, res) => {
     };
 
     // Check if the device already exists
-    let device = await DeviceLocation.findOne({ mobileIdentifier });
+    let device = await Location.findOne({ mobileIdentifier });
 
     if (device) {
       // Ensure locations is an array
@@ -78,7 +78,7 @@ const postLocation = async (req, res) => {
       // Create a new device if not exists
       const mobile_id = await getNextSequenceValue("mobile_id");
 
-      const newDevice = new DeviceLocation({
+      const newDevice = new Location({
         mobile_id,
         mobileIdentifier,
         fullName,
@@ -103,12 +103,12 @@ const getLocationByID = async (req, res) => {
 
     if (mobile_id) {
       // Find a specific device by mobile_id
-      const device = await DeviceLocation.findOne({
+      const device = await Location.findOne({
         mobile_id: Number(mobile_id),
       });
 
       if (!device) {
-        return res.status(404).json({ message: "DeviceLocation not found" });
+        return res.status(404).json({ message: "Location not found" });
       }
 
       const today = new Date();
@@ -123,7 +123,7 @@ const getLocationByID = async (req, res) => {
         todayDistances?.reduce((sum, loc) => sum + loc.distance, 0) || 0;
 
       return res.status(200).json({
-        message: `Device data for employee:${device.fullName} fetched successfully`,
+        message: `Location data for employee:${device.fullName} fetched successfully`,
         latestData: {
           mobile_id: device.mobile_id,
           employee_name: device.fullName,
@@ -144,7 +144,7 @@ const getLocationByID = async (req, res) => {
 const getAllLocation = async (req, res) => {
   try {
     // fetch all devices
-    const devices = await DeviceLocation.find({});
+    const devices = await Location.find({});
 
     const latestData = devices.map((device) => {
       const today = new Date();
@@ -183,11 +183,11 @@ const getAllLocation = async (req, res) => {
 //     const { start, end } = req.query;
 
 //     // Find the device by mobile_id
-//     const device = await DeviceLocation.findOne({
+//     const device = await Location.findOne({
 //       mobile_id: Number(mobile_id),
 //     });
 //     if (!device) {
-//       return res.status(404).json({ message: "Device Location not found" });
+//       return res.status(404).json({ message: "Location Location not found" });
 //     }
 
 //     let locations = device.locations;
@@ -227,7 +227,7 @@ const getAllLocation = async (req, res) => {
 //deleete al locations
 const deleteAllLocation = async (req, res) => {
   try {
-    await DeviceLocation.deleteMany({});
+    await Location.deleteMany({});
     res.json({ message: "all location deleted" });
   } catch (err) {
     console.error("Error deleting all locations:", err);

@@ -21,6 +21,25 @@ const generateTokens = (user) => {
   return { accessToken, refreshToken };
 };
 
+//firebase Notification
+const updateFBNotificationToken = async (req, res) => {
+  try {
+    const fbNotificationToken = req.body.fbNotificationToken;
+    const userId = req.body.userId;
+
+    const user = await user.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+    user.fbNotificationToken = fbNotificationToken;
+    await user.save();
+    res
+      .status(200)
+      .json({ message: "FB Notification Token updated successfully." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error.", error: err.message });
+  }
+};
+
 // Register new user
 const registerUser = async (req, res) => {
   try {
@@ -251,4 +270,5 @@ module.exports = {
   resetPassword,
   getAllUsers,
   deleteUser,
+  updateFBNotificationToken,
 };

@@ -11,7 +11,7 @@ const UserModelSchema = new Schema(
     mobileIdentifier: { type: String, default: "" },
     role: {
       type: String,
-      default: "",
+      default: "marketingOfficer",
     },
     firstLogin: { type: Boolean, default: true },
     resetMobile: { type: Boolean, default: true },
@@ -20,6 +20,7 @@ const UserModelSchema = new Schema(
       required: false,
       default: "",
     },
+    fbNotificationToken: { type: String, default: "" },
   },
   { timestamps: true }
 );
