@@ -138,7 +138,7 @@ const loginUser = async (req, res) => {
       refreshToken,
       user: {
         userId: user._id,
-        username: user.username,
+        username: user.fullName,
         email: user.email,
         role: user.role,
         firstLogin: user.firstLogin,
