@@ -59,8 +59,11 @@ const getVisitLog = async (req, res) => {
       employee: employeeId,
       poc: pocId,
     })
-      .populate("employee", "name email department") // Populate employee fields
-      .populate("poc", "name contact details"); // Populate POC fields
+      .populate("employee", "fullName email role number department") // Populate employee fields
+      .populate(
+        "poc",
+        "name age number country region city address category specialization organization latitude longitude remarks"
+      ); // Populate POC fields
 
     if (!visitLog) {
       return res

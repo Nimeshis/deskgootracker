@@ -70,7 +70,7 @@ const getAttendanceByIdAndDate = async (req, res) => {
       _id: attendance._id,
       filteredAttendance,
     };
-    res.status(200).json(filteredData);
+    res.status(200).json(filteredData, latestAttendance);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -92,6 +92,7 @@ const postAttendanceByID = async (req, res) => {
     if (!attendanceRecord) {
       return res.status(404).json({ message: `No user with ID ${id} found` });
     }
+    //dont let the person checkout twice on the same date
 
     const lastAttendance =
       attendanceRecord.attendance[attendanceRecord.attendance.length - 1];
