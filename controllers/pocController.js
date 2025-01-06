@@ -64,7 +64,8 @@ const getPOCById = async (req, res) => {
 // POST a new POC
 const postPOC = async (req, res) => {
   try {
-    const existingPOC = await findOne({ number: req.body.number });
+    // console.log(req.body);
+    const existingPOC = await POC.findOne({ number: req.body.number });
     if (existingPOC)
       return res.status(400).json({ message: "POC already exists" });
 
