@@ -47,6 +47,7 @@ const getPOCById = async (req, res) => {
       number: poc.number,
       fullAddress: `${poc.country}, ${poc.region}, ${poc.city}, ${poc.address}`,
       specialization: poc.specialization,
+      category: poc.category,
       organization: poc.organization,
       latitude: poc.latitude,
       longitude: poc.longitude,
