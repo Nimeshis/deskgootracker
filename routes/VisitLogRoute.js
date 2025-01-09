@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const {
   getVisitLog,
-  postVisitLog,
+  postNewVisitLog,
 } = require("../controllers/visitLogController");
 
-router.route("/visitLog").post(postVisitLog).get(getVisitLog);
+router.route("/visitLog").post(postNewVisitLog).get(getVisitLog);
 module.exports = router;

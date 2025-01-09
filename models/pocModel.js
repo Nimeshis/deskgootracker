@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 // Define the schema for 'POC'
 const pocSchema = new Schema(
   {
-    name: { type: String, required: true },
+    pocName: { type: String, required: true },
     age: { type: String, default: "" },
     number: { type: String, required: true, unique: true },
     country: { type: String, required: true },
@@ -21,6 +21,7 @@ const pocSchema = new Schema(
     remarks: { type: String, default: "" },
     createdById: { type: String, required: true },
     createdByName: { type: String, required: true },
+    visitCounter: { type: Number, default: 0 },
   },
 
   { timestamps: true }

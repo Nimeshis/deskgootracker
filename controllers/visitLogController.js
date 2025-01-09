@@ -1,88 +1,154 @@
 const VisitLog = require("../models/visitLogModel");
-// Log a new visit for a specific employee and POC
-const postVisitLog = async (req, res, next) => {
-  try {
-    const { employeeId, pocId, mobileTime, latitude, longitude, remarks } =
-      req.body;
+const POC = require("../models/pocModel");
 
-    // Check if the visit log for the same employee and POC already exists
-    let existingVisit = await findOne({
-      employee: employeeId,
-      poc: pocId,
+const postNewVisitLog = async (req, res) => {
+  try {
+    const { number, createdById, ...pocDetails } = req.body;
+
+    // Check if POC already exists
+    const existingPOC = await POC.findOne({ number });
+    if (existingPOC) {
+      return res
+        .status(400)
+        .json({ success: false, message: "POC already exists" });
+    }
+
+    // Create new POC
+    const poc = new POC({ number, createdById, ...pocDetails });
+    await poc.save();
+
+    // Create a new VisitLog
+    const visitLog = await VisitLog.create({
+      _id: poc.createdById,
+      visitLog: [
+        {
+          visitCreationDate: Date.now(),
+          poc: [
+            {
+              pocId: poc._id,
+              visitType: "New VisitLog",
+              isVisited: false,
+              visitCreationDate: Date.now(),
+            },
+          ],
+        },
+      ],
     });
 
-    if (existingVisit) {
-      // If the visit log exists, update the visitCount and set the new visit details
-      existingVisit.visitCount += 1; // Increase the visit count
-      existingVisit.visitDate = Date.now();
-      existingVisit.mobileTime = mobileTime;
-      existingVisit.submissionLocation = { latitude, longitude };
-      existingVisit.remarks = remarks;
-
-      await existingVisit.save();
-      return res.status(200).json({
-        message: "Visit logged successfully, visit count updated.",
-        visit: existingVisit,
-      });
-    } else {
-      // If no previous visit log, create a new visit log fot the poc visited bt employee
-      const newVisit = new VisitLog({
-        employee: employeeId,
-        poc: pocId,
-        mobileTime: mobileTime,
-        submissionLocation: { latitude, longitude },
-        remarks,
-        visitCount: 1,
-      });
-
-      await newVisit.save();
-
-      return res.status(201).json({
-        message: "New visit logged successfully.",
-        visit: newVisit,
-      });
-    }
+    res.status(201).json({
+      success: true,
+      message: "POC created and VisitLog updated",
+      poc,
+      visitLog,
+    });
   } catch (error) {
-    console.error("Error logging visit:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error while logging visit." });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get the visit log for a specific employee and POC, including full details
+const followUpVisit = async (req, res) => {
+  try {
+    const { pocId, employeeId } = req.body;
+
+    const existingVisit = await VisitLog.findOne({
+      poc: pocId,
+      _id: employeeId,
+    });
+    if (!existingVisit) {
+      return res
+        .status(404)
+        .json({ success: false, message: "VisitLog not found" });
+    }
+
+    // Add follow-up visit remark
+    const visitLog = await VisitLog.push({
+      visitLog: [
+        {
+          poc: [
+            {
+              visitType: "follow up VisitLog",
+              isVisited: false,
+              visitCreationDate: Date.now(),
+            },
+          ],
+        },
+      ],
+    });
+    await visitLog.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Follow-up visit added",
+      visitLog: existingVisit,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getVisitLog = async (req, res) => {
   try {
     const { employeeId, pocId } = req.params;
-    // Fetch the visit log and populate the related employee and POC data
+
     const visitLog = await VisitLog.findOne({
       employee: employeeId,
       poc: pocId,
     })
-      .populate("employee", "fullName email role number department") // Populate employee fields
+      .populate("employee", "fullName email role number department")
       .populate(
         "poc",
         "name age number country region city address category specialization organization latitude longitude remarks"
-      ); // Populate POC fields
+      );
 
     if (!visitLog) {
       return res
         .status(404)
-        .json({ message: "Visit log not found for this employee and POC." });
+        .json({ success: false, message: "VisitLog not found" });
     }
 
-    return res.status(200).json({
-      message: "Visit log retrieved successfully.",
-      visitLog: visitLog,
-    });
+    res.status(200).json({ success: true, visitLog });
   } catch (error) {
-    console.error("Error retrieving visit log:", error);
-    return res
-      .status(500)
-      .json({ message: "Server error while retrieving visit log." });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
+
+const updatePocStatus = async (req, res) => {
+  try {
+    const { pocId, employeeId, latitude, longitude, mobileTime, remark } =
+      req.body;
+
+    const visit = await VisitLog.findOne({ _id: employeeId, poc: pocId });
+    if (!visit) {
+      return res
+        .status(404)
+        .json({ success: false, message: "VisitLog not found" });
+    }
+
+    // Add the remark
+    visit.remarks.push({
+      visitType: "Follow-up VisitLog",
+      isVisited: true,
+      visitCreationDate: Date.now(),
+      latitude,
+      longitude,
+      mobileTime,
+      remark,
+    });
+
+    visit.visitCount += 1; // Increment visit count
+    await visit.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "VisitLog updated", visitLog: visit });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
-  postVisitLog,
+  postNewVisitLog,
+  followUpVisit,
   getVisitLog,
+  updatePocStatus,
 };
