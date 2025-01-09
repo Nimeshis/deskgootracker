@@ -6,7 +6,7 @@ const postNewVisitLog = async (req, res) => {
     const { number, createdById, ...pocDetails } = req.body;
 
     // Check if POC already exists
-    const existingPOC = await POC.findOne({ number });
+    const existingPOC = await POC.findOne({ number: req.body.number });
     if (existingPOC) {
       return res
         .status(400)
