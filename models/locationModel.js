@@ -51,9 +51,6 @@ const LocationSchema = new Schema({
 
 const DeviceSchema = new Schema(
   {
-    mobile_id: {
-      type: Number,
-    },
     mobileIdentifier: {
       type: String,
       // required: true,
@@ -63,7 +60,9 @@ const DeviceSchema = new Schema(
       type: String,
       required: true,
     },
-    locations: [LocationSchema],
+    locations: [
+      { locationDate: { type: Date, default: Date.now() }, LocationSchema },
+    ],
     totalDistance: {
       type: Number,
       default: 0,

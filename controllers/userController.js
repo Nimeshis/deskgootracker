@@ -175,16 +175,13 @@ const refreshToken = async (req, res) => {
       }
 
       // Generate a new access token and refresh token
-      const { accessToken, refreshToken: newRefreshToken } =
-        generateTokens(user);
+      const { accessToken } = generateTokens(user);
 
-      // Update the refresh token in the user model (optional)
-      user.refreshToken = newRefreshToken;
       // await user.save();
 
       return res.status(200).json({
         accessToken,
-        refreshToken: newRefreshToken,
+        refreshToken,
       });
     });
   } catch (error) {
@@ -196,12 +193,23 @@ const refreshToken = async (req, res) => {
 // Reset user password
 const resetPassword = async (req, res) => {
   try {
-    const { email, password, confirmPassword } = req.body;
+    const { odlPassword, email, password, confirmPassword } = req.body;
 
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || oldPassword) {
       return res.status(400).json({
-        message: "Email, password and confirm password are required.",
+        message: "oldPassword, password and confirm password are required.",
       });
+    }
+    const checkUser = await User.findOne({ email });
+    if (!checkUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Use the comparePassword method from the model to compare the password
+    const passwordMatch = await user.comparePassword(oldPassword);
+    console.log(passwordMatch, oldPassword, user.password);
+    if (!passwordMatch) {
+      return res.status(400).json({ message: "Invalid password." });
     }
 
     if (password !== confirmPassword) {
@@ -266,6 +274,23 @@ const deleteUser = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+//logout
+const logout = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const user = await User.findByIdAndUpdate(userId, { refreshToken: null });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    return res.status(200).json({ message: "User logged out successfully." });
+  } catch (error) {
+    console.error("Error logging out user:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 module.exports = {
   registerUser,
   loginUser,
@@ -274,4 +299,5 @@ module.exports = {
   getAllUsers,
   deleteUser,
   updateFBNotificationToken,
+  logout,
 };

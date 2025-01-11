@@ -1,17 +1,8 @@
-const express = require("express");
 const Location = require("../models/locationModel");
 const Counter = require("../models/counterModel");
 
 // Function to get the next sequence value for each device's location_id
-async function getNextSequenceValueForDevice(mobileIdentifier) {
-  const sequenceDocument = await Counter.findOneAndUpdate(
-    { _id: `location_id_${mobileIdentifier}` }, // Unique counter per device
-    { $inc: { sequence_value: 1 } },
-    { new: true, upsert: true } // Create if not exist
-  );
 
-  return sequenceDocument.sequence_value;
-}
 async function getNextSequenceValue(sequenceName) {
   const sequenceDocument = await Counter.findOneAndUpdate(
     { _id: sequenceName },
@@ -25,9 +16,23 @@ async function getNextSequenceValue(sequenceName) {
 // Route to handle location updates
 const postLocation = async (req, res) => {
   try {
+    const userId = req.body.userId;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ message: "Missing required field: userId" });
+    }
+
+    // Find the location document where _id is userId
+    const locationDoc = await Location.findById(userId);
+
+    if (!locationDoc) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Extract location data from the request body
     const {
-      mobileIdentifier,
-      fullName,
       latitude,
       longitude,
       batteryPercentage,
@@ -38,10 +43,10 @@ const postLocation = async (req, res) => {
       distance,
     } = req.body;
 
-    // Generate unique location_id for this specific device
-    const location_id = await getNextSequenceValueForDevice(mobileIdentifier);
+    // Generate a unique location_id
+    const location_id = await getNextSequenceValue("location_id");
 
-    // Create new location object
+    // Create a new location object
     const newLocation = {
       location_id,
       latitude,
@@ -55,56 +60,32 @@ const postLocation = async (req, res) => {
       distance,
     };
 
-    // Check if the device already exists
-    let device = await Location.findOne({ mobileIdentifier });
+    // Push the new location to the locations array
+    locationDoc.locations.push(newLocation);
 
-    if (device) {
-      // Ensure locations is an array
-      if (!Array.isArray(device.locations)) {
-        device.locations = [];
-      }
-      // Append new location
-      device.locations.push(newLocation);
-      await device.save();
-      return res.status(200).json({
-        message: "Location data appended successfully.",
-        mobile_id: device.mobile_id,
-        mobileIdentifier: device.mobileIdentifier,
-        employee_name: device.fullName,
-        latestLocation: newLocation,
-        totalDistance: device.totalDistance,
-      });
-    } else {
-      // Create a new device if not exists
-      const mobile_id = await getNextSequenceValue("mobile_id");
+    // Save the updated document
+    await locationDoc.save();
 
-      const newDevice = new Location({
-        mobile_id,
-        mobileIdentifier,
-        fullName,
-        locations: [newLocation], // Initialize with first location
-      });
-
-      await newDevice.save();
-      return res.status(201).json({
-        message: "New device created successfully.",
-        newDevice,
-      });
-    }
+    return res.status(200).json({
+      message: "Location data appended successfully.",
+      latestLocation: newLocation,
+      totalLocations: locationDoc.locations.length,
+    });
   } catch (error) {
-    console.error("Error adding device:", error);
+    console.error("Error appending location data:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 //location by mobile_id
 const getLocationByID = async (req, res) => {
   try {
-    const { mobile_id } = req.query;
+    const { _id } = req.query;
 
-    if (mobile_id) {
+    if (_id) {
       // Find a specific device by mobile_id
       const device = await Location.findOne({
-        mobile_id: Number(mobile_id),
+        _id: Number(_id),
       });
 
       if (!device) {

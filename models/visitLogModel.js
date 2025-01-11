@@ -1,33 +1,23 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const visitSchema = new Schema({
-  visitLog: [
+const visitModel = new Schema({
+  _id: { type: String, required: true }, // User ID or unique identifier
+  visitedPoc: [
     {
-      visitCreationDate: { type: Date, default: Date.now },
-      poc: [
+      pocId: { type: String, required: true }, // Unique identifier for the Point of Contact (POC)
+      visitCount: { type: Number, default: 0 }, // Counter for visits
+      visits: [
         {
-          pocId: { type: "string" },
           mobileTime: { type: String, default: "" },
           remark: { type: String, default: "" },
           timestamp: { type: String, default: "" },
-          isVisited: { type: Boolean, default: false },
-          visitType: { type: String, default: "New Visit" },
-          latitude: {
-            type: Number,
-            default: 0,
-            // required: true
-          },
-          longitude: {
-            type: Number,
-            default: 0,
-            // required: true
-          },
-          visitCount: { type: Number, default: 0 },
+          latitude: { type: Number, default: 0 },
+          longitude: { type: Number, default: 0 },
         },
       ],
     },
   ],
 });
 
-module.exports = mongoose.model("Visit", visitSchema);
+module.exports = mongoose.model("Visit", visitModel);

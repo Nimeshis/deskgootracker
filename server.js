@@ -25,12 +25,12 @@ app.use(bodyParser.json());
 // Routes that do NOT require authentication
 app.use("/api", login);
 app.use("/api", countries);
+app.use("/api", location);
 app.use("/api", user);
 app.use("/api", specialization);
+app.use("/api", Counter);
 
 // Routes that DO require authentication
-app.use("/api", authenticate, location);
-app.use("/api", authenticate, Counter);
 app.use("/api", authenticate, attendance);
 app.use("/api", authenticate, visitLog);
 app.use("/api", authenticate, poc);
