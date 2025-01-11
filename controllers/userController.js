@@ -2,7 +2,7 @@ const User = require("../models/userModel");
 const Attendance = require("../models/attendanceModel");
 const Location = require("../models/locationModel");
 const jwt = require("jsonwebtoken");
-const VisitLog = require("../models/visitLogModel");
+const Visit = require("../models/visitLogModel");
 
 // Helper function to generate both access and refresh tokens
 const generateTokens = (user) => {
@@ -81,10 +81,8 @@ const registerUser = async (req, res) => {
     });
     createLocationId.save();
 
-    // const createVisitLog = await VisitLog.create({
+    // const createVisitLog = await Visit.create({
     //   _id: newUser._id,
-    //   fullName: newUser.fullName,
-    //   timestamp: new Date(),
     // });
     // createVisitLog.save();
 

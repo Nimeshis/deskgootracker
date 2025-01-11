@@ -1,13 +1,26 @@
 const VisitLog = require("../models/visitLogModel");
+const User = require("../models/userModel");
 const POC = require("../models/pocModel");
+const Counter = require("../models/counterModel");
+
+//counter function
+async function getNextSequenceValue(sequenceName) {
+  const sequenceDocument = await Counter.findOneAndUpdate(
+    { _id: sequenceName },
+    { $inc: { sequence_value: 1 } },
+    { new: true, upsert: true } // Create if it doesn't exist
+  );
+
+  return sequenceDocument.sequence_value;
+}
 
 //post new POC and visit log for that poc
 const postNewVisitLog = async (req, res) => {
   try {
-    const { number, createdById, ...pocDetails } = req.body;
+    const { number, createdById, createdByName, ...pocDetails } = req.body;
 
     // Check if POC already exists
-    const existingPOC = await POC.findOne({ number });
+    const existingPOC = await POC.findOne({ "poc.number": number });
     if (existingPOC) {
       return res
         .status(400)
@@ -15,19 +28,52 @@ const postNewVisitLog = async (req, res) => {
     }
 
     // Create a new POC
-    const poc = new POC({ number, createdById, ...pocDetails });
+    const newPoc = {
+      pocName: pocDetails.pocName,
+      age: pocDetails.age,
+      number: number,
+      country: pocDetails.country,
+      region: pocDetails.region,
+      city: pocDetails.city,
+      address: pocDetails.address,
+      category: pocDetails.category,
+      specialization: pocDetails.specialization,
+      organization: pocDetails.organization,
+      ambNumber: pocDetails.ambNumber,
+      createdById,
+      createdByName,
+      visitCounter: pocDetails.visitCounter || 1, // Set default if not provided
+      referralCounter: pocDetails.referralCounter || 0,
+      referral: pocDetails.referral || [],
+      deleted: pocDetails.deleted || false,
+    };
+    console.log(newPoc);
+    // Find the latest POC document to increment the pocCounter
+    const pocCounter_id = await getNextSequenceValue("pocCounter_id");
+
+    // Save the new POC document
+    const poc = new POC({
+      pocCounter_id,
+      poc: [newPoc], // Saving the POC in the nested array
+    });
+
     await poc.save();
 
-    // Get the current date in YYYY-MM-DD format
-    const currentDate = new Date().toISOString().split("T")[0];
+    res.status(201).json({
+      success: true,
+      message: "POC created successfully",
+      poc,
+    });
 
     // Find the VisitLog for the employee
     let visitLog = await VisitLog.findOne({ _id: createdById });
-
+    const visitLog_id = await getNextSequenceValue("visitLog_id");
+    console.log({ "visitLog id": visitLog_id, visitLog: visitLog });
     if (!visitLog) {
       // Create a new VisitLog for the employee if it doesn't exist
       visitLog = new VisitLog({
         _id: createdById,
+        visitLog_id,
         visitedPoc: [
           {
             pocId: poc._id,
@@ -100,9 +146,24 @@ const followUpVisit = async (req, res) => {
     let visitRecord = await VisitLog.findOne({ _id: createdById });
 
     if (!visitRecord) {
-      return res.status(404).json({
-        success: false,
-        message: "VisitLog record not found",
+      // Create a new VisitLog for the employee if it doesn't exist
+      visitRecord = new VisitLog({
+        _id: createdById,
+        visitedPoc: [
+          {
+            pocId: pocId,
+            visitCount: 1, // First visit for this POC
+            visits: [
+              {
+                mobileTime: pocDetails.mobileTime,
+                remark: pocDetails.remarks || "",
+                timestamp: new Date().toISOString(),
+                latitude: pocDetails.latitude || 0,
+                longitude: pocDetails.longitude || 0,
+              },
+            ],
+          },
+        ],
       });
     }
 

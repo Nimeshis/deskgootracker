@@ -20,7 +20,19 @@ const UserModelSchema = new Schema(
       required: false,
       default: "",
     },
+    accessToken: { type: String, default: "" },
     fbNotificationToken: { type: String, default: "" },
+    visitLogCounter: { type: Number, unique: true },
+    referralCounter: { type: Number, unique: true },
+    referral: [
+      {
+        timestamp: { type: Date },
+        referralId: { type: String, default: "" },
+        referralBy: { type: String, default: "" },
+        patientId: { type: String, default: "" },
+        mobileTime: { type: String, default: "" },
+      },
+    ],
   },
   { timestamps: true }
 );

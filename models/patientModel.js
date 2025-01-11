@@ -4,15 +4,21 @@ const schema = mongoose.Schema;
 const patientSchema = new schema({
   patientName: {
     type: String,
+    default: "",
   },
-  age: { type: Number },
-  gender: { type: String },
-  phone: { type: String },
-  country: { type: String },
-  region: { type: String },
-  city: { type: String },
-  address: { type: String },
-  preDiagnosis: { type: String },
+  age: { type: Number, default: 0 },
+  gender: { type: String, default: "" },
+  phone: { type: String, default: "" },
+  country: { type: String, default: "" },
+  region: { type: String, default: "" },
+  city: { type: String, default: "" },
+  address: { type: String, default: "" },
+  preDiagnosis: { type: String, default: "" },
 });
 
-module.exports = mongoose.model("Patient", patientSchema);
+const patient = new schema({
+  patientCounter: { type: Number, unique: true },
+  patient: [patientSchema],
+});
+
+module.exports = mongoose.model("Patient", patient);

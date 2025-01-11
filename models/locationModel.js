@@ -60,9 +60,7 @@ const DeviceSchema = new Schema(
       type: String,
       required: true,
     },
-    locations: [
-      { locationDate: { type: Date, default: Date.now() }, LocationSchema },
-    ],
+    locations: [{ LocationSchema }],
     totalDistance: {
       type: Number,
       default: 0,

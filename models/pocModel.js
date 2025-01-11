@@ -14,13 +14,28 @@ const pocSchema = new Schema(
     category: { type: String, required: false, default: "" },
     specialization: { type: String, required: false, default: "" },
     organization: { type: String, required: false, default: "" },
+    ambNumber: { type: String, default: "" },
     deleted: { type: Boolean, default: false },
     createdById: { type: String, required: true },
     createdByName: { type: String, required: true },
-    visitCounter: { type: Number, default: 0 },
+    visitCounter: { type: Number, default: 1 },
+    referralCounter: { type: Number, default: 0 },
+    referral: [
+      {
+        timestamp: { type: Date },
+        referralId: { type: String, default: "" },
+        marketedById: { type: String, default: "" },
+        patientId: { type: String, default: "" },
+        mobileTime: { type: String, default: "" },
+      },
+    ],
   },
 
   { timestamps: true }
 );
+const poc = new Schema({
+  pocCounter_id: { type: Number, unique: true },
+  poc: [pocSchema],
+});
 
-module.exports = mongoose.model("POC", pocSchema);
+module.exports = mongoose.model("POC", poc);
